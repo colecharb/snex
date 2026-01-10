@@ -143,18 +143,31 @@ export function useSnakeGame(gridRadius: number = 11) {
     if (!mounted || gameOver || isPaused) return;
 
     const TICK_RATE = 200; // ms per move
+    const MAX_DELTA = TICK_RATE * 2; // Prevent spiral of death
+    const MIN_DELTA = 0; // Ignore zero/negative deltas
+
     let lastTime = performance.now();
     let accumulator = 0;
     let frameId: number;
 
     const tick = (currentTime: number) => {
-      const delta = currentTime - lastTime;
+      let delta = currentTime - lastTime;
+
+      // Clamp delta to prevent issues with extreme values
+      if (delta < MIN_DELTA) delta = 0;
+      if (delta > MAX_DELTA) delta = MAX_DELTA;
+
       lastTime = currentTime;
       accumulator += delta;
 
-      while (accumulator >= TICK_RATE) {
+      // Execute exactly one tick per frame to prevent multiple moves
+      if (accumulator >= TICK_RATE) {
         moveSnake();
         accumulator -= TICK_RATE;
+        // Cap accumulator to prevent runaway
+        if (accumulator > TICK_RATE) {
+          accumulator = 0;
+        }
       }
 
       frameId = requestAnimationFrame(tick);
