@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   HexCoord,
   HexDirection,
@@ -9,7 +9,7 @@ import {
   isInGrid,
   turnLeft,
   turnRight,
-} from '@/lib/hexGrid';
+} from "@/lib/hexGrid";
 
 export interface GameState {
   snake: HexCoord[];
@@ -23,37 +23,47 @@ export interface GameState {
 }
 
 export function useSnakeGame(gridRadius: number = 11) {
+  const [mounted, setMounted] = useState(false);
   const [snake, setSnake] = useState<HexCoord[]>([{ q: 0, r: 0 }]);
   const [direction, setDirection] = useState<HexDirection>(HexDirection.East);
   const [food, setFood] = useState<HexCoord | null>(null);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [allCells] = useState<HexCoord[]>(() => generateHexagonalGrid(gridRadius));
+  const [allCells] = useState<HexCoord[]>(() =>
+    generateHexagonalGrid(gridRadius),
+  );
 
   const directionRef = useRef(direction);
-  const pendingTurnRef = useRef<'left' | 'right' | null>(null);
+  const pendingTurnRef = useRef<"left" | "right" | null>(null);
+
+  // Mark as mounted after hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     directionRef.current = direction;
   }, [direction]);
 
-  // Initialize food
-  useEffect(() => {
-    if (!food) {
-      spawnFood();
-    }
-  }, []);
-
   const spawnFood = useCallback(() => {
     const snakeSet = new Set(snake.map(hexToKey));
-    const availableCells = allCells.filter((cell) => !snakeSet.has(hexToKey(cell)));
+    const availableCells = allCells.filter(
+      (cell) => !snakeSet.has(hexToKey(cell)),
+    );
 
     if (availableCells.length > 0) {
       const randomIndex = Math.floor(Math.random() * availableCells.length);
       setFood(availableCells[randomIndex]);
     }
   }, [snake, allCells]);
+
+  // Initialize food / respawn after reset (only after hydration)
+  useEffect(() => {
+    if (mounted && !food) {
+      spawnFood();
+    }
+  }, [mounted, food, spawnFood]);
 
   const resetGame = useCallback(() => {
     setSnake([{ q: 0, r: 0 }]);
@@ -72,21 +82,24 @@ export function useSnakeGame(gridRadius: number = 11) {
     }
   }, [gameOver]);
 
-  const turn = useCallback((turnDirection: 'left' | 'right') => {
-    if (gameOver || isPaused) return;
-    pendingTurnRef.current = turnDirection;
-  }, [gameOver, isPaused]);
+  const turn = useCallback(
+    (turnDirection: "left" | "right") => {
+      if (gameOver || isPaused) return;
+      pendingTurnRef.current = turnDirection;
+    },
+    [gameOver, isPaused],
+  );
 
   const moveSnake = useCallback(() => {
     if (gameOver || isPaused) return;
 
     // Apply pending turn
     let newDirection = directionRef.current;
-    if (pendingTurnRef.current === 'left') {
+    if (pendingTurnRef.current === "left") {
       newDirection = turnLeft(directionRef.current);
       setDirection(newDirection);
       pendingTurnRef.current = null;
-    } else if (pendingTurnRef.current === 'right') {
+    } else if (pendingTurnRef.current === "right") {
       newDirection = turnRight(directionRef.current);
       setDirection(newDirection);
       pendingTurnRef.current = null;
@@ -125,27 +138,44 @@ export function useSnakeGame(gridRadius: number = 11) {
     });
   }, [gameOver, isPaused, food, gridRadius, spawnFood]);
 
-  // Game loop
+  // Game loop using requestAnimationFrame for smoother timing
   useEffect(() => {
-    if (gameOver || isPaused) return;
+    if (!mounted || gameOver || isPaused) return;
 
-    const interval = setInterval(() => {
-      moveSnake();
-    }, 200); // Move every 200ms
+    const TICK_RATE = 200; // ms per move
+    let lastTime = performance.now();
+    let accumulator = 0;
+    let frameId: number;
 
-    return () => clearInterval(interval);
-  }, [moveSnake, gameOver, isPaused]);
+    const tick = (currentTime: number) => {
+      const delta = currentTime - lastTime;
+      lastTime = currentTime;
+      accumulator += delta;
 
-  // Keyboard controls
+      while (accumulator >= TICK_RATE) {
+        moveSnake();
+        accumulator -= TICK_RATE;
+      }
+
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [mounted, moveSnake, gameOver, isPaused]);
+
+  // Keyboard controls (WASD)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
+      const key = e.key.toLowerCase();
+      if (key === "a") {
         e.preventDefault();
-        turn('left');
-      } else if (e.key === 'ArrowRight') {
+        turn("left");
+      } else if (key === "d") {
         e.preventDefault();
-        turn('right');
-      } else if (e.key === ' ') {
+        turn("right");
+      } else if (key === " ") {
         e.preventDefault();
         if (gameOver) {
           resetGame();
@@ -155,8 +185,8 @@ export function useSnakeGame(gridRadius: number = 11) {
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [turn, gameOver, resetGame, togglePause]);
 
   return {
