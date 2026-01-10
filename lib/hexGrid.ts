@@ -10,19 +10,19 @@ export interface HexCoord {
 export enum HexDirection {
   East = 0,
   NorthEast = 1,
-  NorthWest = 2,
+  North = 2,
   West = 3,
   SouthWest = 4,
-  SouthEast = 5,
+  South = 5,
 }
 
 const directionVectors: HexCoord[] = [
-  { q: 1, r: 0 },   // East
-  { q: 0, r: -1 },  // NorthEast
-  { q: -1, r: -1 }, // NorthWest
-  { q: -1, r: 0 },  // West
-  { q: 0, r: 1 },   // SouthWest
-  { q: 1, r: 1 },   // SouthEast
+  { q: 1, r: 0 },   // East (down-right)
+  { q: 1, r: -1 },  // NorthEast (up-right)
+  { q: 0, r: -1 },  // North (up)
+  { q: -1, r: 0 },  // West (up-left)
+  { q: -1, r: 1 },  // SouthWest (down-left)
+  { q: 0, r: 1 },   // South (down)
 ];
 
 export function hexEqual(a: HexCoord, b: HexCoord): boolean {
