@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --cell-fill: #eee;
+  --cell-stroke: #ccc;
+  --food-fill: #333;
+  --snake-head: #10a33a;
+  --snake-body: #22c55e;
+  --muted: #999;
+  --muted-foreground: #737373;
+  --border: #e5e5e5;
 }
 
 @theme inline {
@@ -14,9 +22,29 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #000000;
+    --foreground: #ffffff;
+    --cell-fill: #171717;
+    --cell-stroke: #333333;
+    --food-fill: #ffffff;
+    --snake-head: #22c55e;
+    --snake-body: #4ade80;
+    --muted: #666;
+    --muted-foreground: #737373;
+    --border: #262626;
   }
+}
+
+html,
+body {
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 body {
