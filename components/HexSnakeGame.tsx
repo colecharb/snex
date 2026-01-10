@@ -55,7 +55,7 @@ export default function HexSnakeGame() {
   const snakeHead = snake[0];
 
   // Calculate SVG viewBox
-  const padding = HEX_SIZE * 2;
+  const padding = HEX_SIZE * 3;
   const gridWidth = HEX_SIZE * 3 * gridRadius + padding * 2;
   const gridHeight = HEX_SIZE * Math.sqrt(3) * gridRadius + padding * 2;
 
@@ -72,37 +72,35 @@ export default function HexSnakeGame() {
         )}
       </div>
 
-      <div className="mb-8 bg-gray-800 rounded-lg p-4">
-        <svg
-          width={gridWidth}
-          height={gridHeight}
-          viewBox={`${-gridWidth / 2} ${-gridHeight / 2} ${gridWidth} ${gridHeight}`}
-          className="mx-auto"
-        >
-          {/* Grid cells */}
-          {allCells.map((hex) => {
-            const key = hexToKey(hex);
-            const isSnake = snakeSet.has(key);
-            const isHead = hexEqual(hex, snakeHead);
-            const isFood = food && hexEqual(hex, food);
+      <svg
+        width={gridWidth}
+        height={gridHeight}
+        viewBox={`${-gridWidth / 2} ${-gridHeight / 2} ${gridWidth} ${gridHeight}`}
+        className="mx-auto mb-8"
+      >
+        {/* Grid cells */}
+        {allCells.map((hex) => {
+          const key = hexToKey(hex);
+          const isSnake = snakeSet.has(key);
+          const isHead = hexEqual(hex, snakeHead);
+          const isFood = food && hexEqual(hex, food);
 
-            let fill = '#1a1a1a';
-            if (isFood) fill = '#ef4444'; // Red for food
-            else if (isHead) fill = '#22c55e'; // Green for head
-            else if (isSnake) fill = '#4ade80'; // Light green for body
+          let fill = '#1a1a1a';
+          if (isFood) fill = '#ef4444'; // Red for food
+          else if (isHead) fill = '#22c55e'; // Green for head
+          else if (isSnake) fill = '#4ade80'; // Light green for body
 
-            return (
-              <Hexagon
-                key={key}
-                hex={hex}
-                size={HEX_SIZE}
-                fill={fill}
-                stroke="#333"
-              />
-            );
-          })}
-        </svg>
-      </div>
+          return (
+            <Hexagon
+              key={key}
+              hex={hex}
+              size={HEX_SIZE}
+              fill={fill}
+              stroke="#333"
+            />
+          );
+        })}
+      </svg>
 
       <div className="space-y-4 text-center">
         <div className="space-x-4">

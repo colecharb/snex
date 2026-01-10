@@ -38,11 +38,11 @@ export function getNeighbor(hex: HexCoord, direction: HexDirection): HexCoord {
 }
 
 export function turnLeft(direction: HexDirection): HexDirection {
-  return ((direction + 5) % 6) as HexDirection;
+  return ((direction + 1) % 6) as HexDirection;
 }
 
 export function turnRight(direction: HexDirection): HexDirection {
-  return ((direction + 1) % 6) as HexDirection;
+  return ((direction + 5) % 6) as HexDirection;
 }
 
 // Generate all hexagons in a hexagonal shape with given radius
