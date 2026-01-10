@@ -1,54 +1,44 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSnakeGame } from "@/hooks/useSnakeGame";
 import { HexCoord, hexToPixel, hexToKey, hexEqual } from "@/lib/hexGrid";
 
 const HEX_SIZE = 20; // Size of each hexagon
 const STROKE_WIDTH = 1;
 
-// Generate hexagon path for SVG
-function hexagonPath(size: number): string {
-  const points: [number, number][] = [];
+// Draw a hexagon on canvas
+function drawHexagon(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  fill: string,
+  stroke: string,
+  strokeWidth: number
+) {
+  ctx.beginPath();
   for (let i = 0; i < 6; i++) {
     const angle = (Math.PI / 3) * i;
-    const x = size * Math.cos(angle);
-    const y = size * Math.sin(angle);
-    points.push([x, y]);
+    const hx = x + size * Math.cos(angle);
+    const hy = y + size * Math.sin(angle);
+    if (i === 0) {
+      ctx.moveTo(hx, hy);
+    } else {
+      ctx.lineTo(hx, hy);
+    }
   }
-  return (
-    points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]},${p[1]}`).join(" ") +
-    " Z"
-  );
-}
-
-interface HexagonProps {
-  hex: HexCoord;
-  size: number;
-  fill: string;
-  stroke?: string;
-  strokeWidth?: number;
-}
-
-function Hexagon({
-  hex,
-  size,
-  fill,
-  stroke = "#333",
-  strokeWidth = STROKE_WIDTH,
-}: HexagonProps) {
-  const { x, y } = hexToPixel(hex, size);
-  const path = hexagonPath(size);
-
-  return (
-    <g transform={`translate(${x}, ${y})`}>
-      <path d={path} fill={fill} stroke={stroke} strokeWidth={strokeWidth} />
-    </g>
-  );
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = strokeWidth;
+  ctx.stroke();
 }
 
 export default function HexSnakeGame() {
   const [mounted, setMounted] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const {
     snake,
     food,
@@ -69,12 +59,142 @@ export default function HexSnakeGame() {
   const snakeSet = new Set(snake.map(hexToKey));
   const snakeHead = snake[0];
 
-  // Calculate SVG viewBox - account for full grid extent plus hex size at edges
+  // Calculate canvas dimensions
   const padding = HEX_SIZE * 2;
   const gridWidth = HEX_SIZE * (3 * gridRadius + 2) + padding * 2;
   const gridHeight =
     HEX_SIZE * Math.sqrt(3) * (2 * gridRadius + 1) + padding * 2;
   const aspectRatio = gridWidth / gridHeight;
+
+  // Shared render function
+  const renderCanvas = useRef(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Get CSS colors
+    const computedStyle = getComputedStyle(canvas);
+    const cellFill = computedStyle.getPropertyValue("--cell-fill").trim();
+    const cellStroke = computedStyle.getPropertyValue("--cell-stroke").trim();
+    const snakeBody = computedStyle.getPropertyValue("--snake-body").trim();
+    const snakeHeadColor = computedStyle.getPropertyValue("--snake-head").trim();
+    const foodFill = computedStyle.getPropertyValue("--food-fill").trim();
+
+    // Handle high DPI displays
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    ctx.scale(dpr, dpr);
+
+    // Clear canvas
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    // Center the coordinate system
+    ctx.save();
+    ctx.translate(rect.width / 2, rect.height / 2);
+
+    // Calculate scale to fit grid
+    const scale = Math.min(
+      rect.width / gridWidth,
+      rect.height / gridHeight
+    );
+    ctx.scale(scale, scale);
+
+    // Draw all hexagons
+    allCells.forEach((hex) => {
+      const key = hexToKey(hex);
+      const isSnake = snakeSet.has(key);
+      const isHead = hexEqual(hex, snakeHead);
+      const isFood = food && hexEqual(hex, food);
+
+      let fill = cellFill;
+      if (isFood) fill = foodFill;
+      else if (isHead) fill = snakeHeadColor;
+      else if (isSnake) fill = snakeBody;
+
+      const { x, y } = hexToPixel(hex, HEX_SIZE);
+      drawHexagon(ctx, x, y, HEX_SIZE, fill, cellStroke, STROKE_WIDTH);
+    });
+
+    ctx.restore();
+  });
+
+  // Update render function when dependencies change
+  useEffect(() => {
+    renderCanvas.current = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const computedStyle = getComputedStyle(canvas);
+      const cellFill = computedStyle.getPropertyValue("--cell-fill").trim();
+      const cellStroke = computedStyle.getPropertyValue("--cell-stroke").trim();
+      const snakeBody = computedStyle.getPropertyValue("--snake-body").trim();
+      const snakeHeadColor = computedStyle.getPropertyValue("--snake-head").trim();
+      const foodFill = computedStyle.getPropertyValue("--food-fill").trim();
+
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      ctx.save();
+      ctx.translate(rect.width / 2, rect.height / 2);
+
+      const scale = Math.min(
+        rect.width / gridWidth,
+        rect.height / gridHeight
+      );
+      ctx.scale(scale, scale);
+
+      allCells.forEach((hex) => {
+        const key = hexToKey(hex);
+        const isSnake = snakeSet.has(key);
+        const isHead = hexEqual(hex, snakeHead);
+        const isFood = food && hexEqual(hex, food);
+
+        let fill = cellFill;
+        if (isFood) fill = foodFill;
+        else if (isHead) fill = snakeHeadColor;
+        else if (isSnake) fill = snakeBody;
+
+        const { x, y } = hexToPixel(hex, HEX_SIZE);
+        drawHexagon(ctx, x, y, HEX_SIZE, fill, cellStroke, STROKE_WIDTH);
+      });
+
+      ctx.restore();
+    };
+  }, [snake, food, allCells, snakeSet, snakeHead, gridRadius, gridWidth, gridHeight]);
+
+  // Render when game state changes
+  useEffect(() => {
+    if (!mounted) return;
+    renderCanvas.current();
+  }, [mounted, snake, food]);
+
+  // Handle canvas resize
+  useEffect(() => {
+    if (!mounted || !canvasRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      renderCanvas.current();
+    });
+
+    resizeObserver.observe(canvasRef.current);
+
+    return () => resizeObserver.disconnect();
+  }, [mounted]);
 
   return (
     <div
@@ -101,38 +221,15 @@ export default function HexSnakeGame() {
 
       {/* Game board and controls */}
       <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center px-4">
-        <svg
-          viewBox={`${-gridWidth / 2} ${-gridHeight / 2} ${gridWidth} ${gridHeight}`}
+        <canvas
+          ref={canvasRef}
           className="shrink min-h-0"
           style={{
             aspectRatio: aspectRatio,
             maxHeight: "100%",
             maxWidth: "100%",
           }}
-        >
-          {mounted &&
-            allCells.map((hex) => {
-              const key = hexToKey(hex);
-              const isSnake = snakeSet.has(key);
-              const isHead = hexEqual(hex, snakeHead);
-              const isFood = food && hexEqual(hex, food);
-
-              let fill = "var(--cell-fill)";
-              if (isFood) fill = "var(--food-fill)";
-              else if (isHead) fill = "var(--snake-head)";
-              else if (isSnake) fill = "var(--snake-body)";
-
-              return (
-                <Hexagon
-                  key={key}
-                  hex={hex}
-                  size={HEX_SIZE}
-                  fill={fill}
-                  stroke="var(--cell-stroke)"
-                />
-              );
-            })}
-        </svg>
+        />
 
         {/* Mobile touch controls - immediately below board */}
         <div className="flex md:hidden items-center gap-8 w-full max-w-xs justify-between mt-6 shrink-0">
