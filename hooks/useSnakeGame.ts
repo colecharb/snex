@@ -39,6 +39,7 @@ export function useSnakeGame(gridRadius: number = 11) {
 
   // Mark as mounted after hydration
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -61,6 +62,7 @@ export function useSnakeGame(gridRadius: number = 11) {
   // Initialize food / respawn after reset (only after hydration)
   useEffect(() => {
     if (mounted && !food) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       spawnFood();
     }
   }, [mounted, food, spawnFood]);

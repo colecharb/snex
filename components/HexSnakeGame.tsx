@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSnakeGame } from "@/hooks/useSnakeGame";
-import { HexCoord, hexToPixel, hexToKey, hexEqual } from "@/lib/hexGrid";
+import { hexToPixel, hexToKey, hexEqual } from "@/lib/hexGrid";
 
 const HEX_SIZE = 20; // Size of each hexagon
 const STROKE_WIDTH = 1;
@@ -15,7 +15,7 @@ function drawHexagon(
   size: number,
   fill: string,
   stroke: string,
-  strokeWidth: number
+  strokeWidth: number,
 ) {
   ctx.beginPath();
   for (let i = 0; i < 6; i++) {
@@ -53,10 +53,11 @@ export default function HexSnakeGame() {
   } = useSnakeGame(11);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
-  const snakeSet = new Set(snake.map(hexToKey));
+  const snakeSet = useMemo(() => new Set(snake.map(hexToKey)), [snake]);
   const snakeHead = snake[0];
 
   // Calculate canvas dimensions
@@ -79,7 +80,9 @@ export default function HexSnakeGame() {
     const cellFill = computedStyle.getPropertyValue("--cell-fill").trim();
     const cellStroke = computedStyle.getPropertyValue("--cell-stroke").trim();
     const snakeBody = computedStyle.getPropertyValue("--snake-body").trim();
-    const snakeHeadColor = computedStyle.getPropertyValue("--snake-head").trim();
+    const snakeHeadColor = computedStyle
+      .getPropertyValue("--snake-head")
+      .trim();
     const foodFill = computedStyle.getPropertyValue("--food-fill").trim();
 
     // Handle high DPI displays
@@ -99,10 +102,7 @@ export default function HexSnakeGame() {
     ctx.translate(rect.width / 2, rect.height / 2);
 
     // Calculate scale to fit grid
-    const scale = Math.min(
-      rect.width / gridWidth,
-      rect.height / gridHeight
-    );
+    const scale = Math.min(rect.width / gridWidth, rect.height / gridHeight);
     ctx.scale(scale, scale);
 
     // Draw all hexagons
@@ -137,7 +137,9 @@ export default function HexSnakeGame() {
       const cellFill = computedStyle.getPropertyValue("--cell-fill").trim();
       const cellStroke = computedStyle.getPropertyValue("--cell-stroke").trim();
       const snakeBody = computedStyle.getPropertyValue("--snake-body").trim();
-      const snakeHeadColor = computedStyle.getPropertyValue("--snake-head").trim();
+      const snakeHeadColor = computedStyle
+        .getPropertyValue("--snake-head")
+        .trim();
       const foodFill = computedStyle.getPropertyValue("--food-fill").trim();
 
       const dpr = window.devicePixelRatio || 1;
@@ -152,10 +154,7 @@ export default function HexSnakeGame() {
       ctx.save();
       ctx.translate(rect.width / 2, rect.height / 2);
 
-      const scale = Math.min(
-        rect.width / gridWidth,
-        rect.height / gridHeight
-      );
+      const scale = Math.min(rect.width / gridWidth, rect.height / gridHeight);
       ctx.scale(scale, scale);
 
       allCells.forEach((hex) => {
@@ -175,7 +174,16 @@ export default function HexSnakeGame() {
 
       ctx.restore();
     };
-  }, [snake, food, allCells, snakeSet, snakeHead, gridRadius, gridWidth, gridHeight]);
+  }, [
+    snake,
+    food,
+    allCells,
+    snakeSet,
+    snakeHead,
+    gridRadius,
+    gridWidth,
+    gridHeight,
+  ]);
 
   // Render when game state changes
   useEffect(() => {
