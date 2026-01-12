@@ -222,7 +222,7 @@ export default function HexSnakeGame() {
         >
           Hex Snake
         </span>
-        <span className="text-sm font-light tracking-wide tabular-nums">
+        <span className="text-3xl md:text-4xl font-light tracking-wide tabular-nums">
           {score}
         </span>
       </div>
