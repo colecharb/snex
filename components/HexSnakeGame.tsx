@@ -220,7 +220,7 @@ export default function HexSnakeGame() {
           className="text-sm font-light tracking-widest uppercase"
           style={{ color: "var(--muted)" }}
         >
-          Snex
+          Hex Snake
         </span>
         <span className="text-sm font-light tracking-wide tabular-nums">
           {score}
