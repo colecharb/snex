@@ -293,9 +293,39 @@ export default function HexSnakeGame() {
 
       {/* Footer - desktop only with safe area padding */}
       <div
-        className="h-12 hidden md:flex items-center justify-center shrink-0 px-6"
+        className="h-12 hidden md:flex items-center justify-between shrink-0 px-6 gap-8"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <kbd
+              className="px-3 py-1.5 text-sm font-mono rounded border"
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor: "rgba(128, 128, 128, 0.05)",
+              }}
+            >
+              A
+            </kbd>
+            <span className="text-sm" style={{ color: "var(--muted)" }}>
+              Turn Left
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <kbd
+              className="px-3 py-1.5 text-sm font-mono rounded border"
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor: "rgba(128, 128, 128, 0.05)",
+              }}
+            >
+              D
+            </kbd>
+            <span className="text-sm" style={{ color: "var(--muted)" }}>
+              Turn Right
+            </span>
+          </div>
+        </div>
         {gameOver ? (
           <button
             onClick={resetGame}
@@ -304,21 +334,14 @@ export default function HexSnakeGame() {
           >
             play again
           </button>
-        ) : isPaused ? (
+        ) : (
           <button
             onClick={togglePause}
             className="text-sm tracking-wide transition-colors"
             style={{ color: "var(--muted)" }}
           >
-            resume
+            {isPaused ? "resume" : "pause"}
           </button>
-        ) : (
-          <span
-            className="text-xs tracking-wider"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            A / D to turn
-          </span>
         )}
       </div>
       {/* Mobile safe area spacer */}
