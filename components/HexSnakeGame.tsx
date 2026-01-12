@@ -220,9 +220,9 @@ export default function HexSnakeGame() {
           className="text-sm font-light tracking-widest uppercase"
           style={{ color: "var(--muted)" }}
         >
-          Snex
+          Hex Snake
         </span>
-        <span className="text-sm font-light tracking-wide tabular-nums">
+        <span className="text-3xl md:text-4xl font-light tracking-wide tabular-nums">
           {score}
         </span>
       </div>
@@ -293,9 +293,39 @@ export default function HexSnakeGame() {
 
       {/* Footer - desktop only with safe area padding */}
       <div
-        className="h-12 hidden md:flex items-center justify-center shrink-0 px-6"
+        className="h-12 hidden md:flex items-center justify-evenly shrink-0 px-6 gap-8"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <kbd
+              className="px-3 py-1.5 text-sm font-mono rounded border"
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor: "rgba(128, 128, 128, 0.05)",
+              }}
+            >
+              A
+            </kbd>
+            <span className="text-sm" style={{ color: "var(--muted)" }}>
+              Turn Left
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <kbd
+              className="px-3 py-1.5 text-sm font-mono rounded border"
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor: "rgba(128, 128, 128, 0.05)",
+              }}
+            >
+              D
+            </kbd>
+            <span className="text-sm" style={{ color: "var(--muted)" }}>
+              Turn Right
+            </span>
+          </div>
+        </div>
         {gameOver ? (
           <button
             onClick={resetGame}
@@ -304,21 +334,30 @@ export default function HexSnakeGame() {
           >
             play again
           </button>
-        ) : isPaused ? (
-          <button
-            onClick={togglePause}
-            className="text-sm tracking-wide transition-colors"
-            style={{ color: "var(--muted)" }}
-          >
-            resume
-          </button>
         ) : (
-          <span
-            className="text-xs tracking-wider"
-            style={{ color: "var(--muted-foreground)" }}
-          >
-            A / D to turn
-          </span>
+          <>
+            <div className="flex items-center gap-2">
+              <kbd
+                className="px-3 py-1.5 text-sm font-mono rounded border"
+                style={{
+                  borderColor: "var(--border)",
+                  backgroundColor: "rgba(128, 128, 128, 0.05)",
+                }}
+              >
+                Space
+              </kbd>
+              <span style={{ color: "var(--muted)" }}>
+                {isPaused ? "resume" : "pause"}
+              </span>
+            </div>
+          </>
+          // <button
+          //   onClick={togglePause}
+          //   className="text-sm tracking-wide transition-colors"
+          //   style={{ color: "var(--muted)" }}
+          // >
+          //   {isPaused ? "resume" : "pause"}
+          // </button>
         )}
       </div>
       {/* Mobile safe area spacer */}
