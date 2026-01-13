@@ -52,3 +52,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Significant hit slop for mobile controls */
+.hit-slop-lg {
+  position: relative;
+}
+
+.hit-slop-lg::before {
+  content: "";
+  position: absolute;
+  top: -24px;
+  left: -24px;
+  right: -24px;
+  bottom: -24px;
+  /* Expands touch target by 24px in all directions (48px total expansion) */
+}

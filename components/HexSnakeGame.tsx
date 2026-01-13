@@ -244,7 +244,7 @@ export default function HexSnakeGame() {
           <button
             onPointerDown={() => turn("left")}
             disabled={gameOver || isPaused}
-            className="w-16 h-16 rounded-full border flex items-center justify-center touch-none transition-colors"
+            className="w-16 h-16 rounded-full border flex items-center justify-center touch-none transition-colors hit-slop-lg"
             style={{
               borderColor: "var(--border)",
               color: gameOver || isPaused ? "var(--border)" : "var(--muted)",
@@ -263,7 +263,7 @@ export default function HexSnakeGame() {
           </button>
           <button
             onPointerDown={gameOver ? resetGame : togglePause}
-            className="text-xs tracking-wider transition-colors touch-none"
+            className="text-xs tracking-wider transition-colors touch-none hit-slop-lg"
             style={{ color: "var(--muted)" }}
           >
             {gameOver ? "play again" : isPaused ? "resume" : "pause"}
@@ -271,7 +271,7 @@ export default function HexSnakeGame() {
           <button
             onPointerDown={() => turn("right")}
             disabled={gameOver || isPaused}
-            className="w-16 h-16 rounded-full border flex items-center justify-center touch-none transition-colors"
+            className="w-16 h-16 rounded-full border flex items-center justify-center touch-none transition-colors hit-slop-lg"
             style={{
               borderColor: "var(--border)",
               color: gameOver || isPaused ? "var(--border)" : "var(--muted)",
